@@ -1,0 +1,40 @@
+version: '3.5'
+
+services:
+  app:
+    build: .
+    container_name: dart_run_demo
+    environment:
+      DB_NAME: dart_run
+      DB_USER: postgres
+      DB_PASS: changeme
+      DB_SOCKET_PATH: /postgres_socket/.s.PGSQL.5432
+    ports:
+      - "8080:8080"
+    volumes:
+       - postgres_socket:/postgres_socket
+    networks:
+      - postgres
+
+  postgres:
+    container_name: postgres
+    image: postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: changeme
+      POSTGRES_DB: dart_run
+      
+    volumes:
+       - postgres_socket:/var/run/postgresql
+    ports:
+      - "5433:5432"
+    networks:
+      - postgres
+    restart: unless-stopped
+
+volumes:
+  postgres_socket:
+  
+networks:
+  postgres:
+    driver: bridge

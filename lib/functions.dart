@@ -20,9 +20,14 @@ Future<Response> function(Request request) async {
 }
 
 PostgreSQLConnection getDbConnection() {
-  final dbSocketPath = '/cloudsql';
-  final connectionName = Platform.environment["CLOUD_SQL_CONNECTION_NAME"]!;
-  final host = "$dbSocketPath/$connectionName/.s.PGSQL.5432";
+  // When running locally we provider a custom socket path from the postgres container
+  String? socketPath = Platform.environment["DB_SOCKET_PATH"];
+  if (socketPath == null) {
+    // Build Cloud SQL socket path
+    final dbSocketPath = '/cloudsql';
+    final connectionName = Platform.environment["CLOUD_SQL_CONNECTION_NAME"]!;
+    socketPath = "$dbSocketPath/$connectionName/.s.PGSQL.5432";
+  }
 
   final port = 5432;
   final String databaseName = Platform.environment["DB_NAME"]!;
@@ -31,14 +36,14 @@ PostgreSQLConnection getDbConnection() {
 
   print('''
 Creating connection with:
-  host: $host
+  socketPath: $socketPath
   databaseName: $databaseName
   user: $user
   password: $password
 ''');
 
   return PostgreSQLConnection(
-    host,
+    socketPath,
     port,
     databaseName,
     isUnixSocket: true,
